@@ -1,0 +1,173 @@
+@import "tailwindcss";
+
+:root {
+  --background: #faf9f7;
+  --foreground: #1b1a17;
+  --card: #ffffff;
+  --card-foreground: #1b1a17;
+  --popover: #ffffff;
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --primary-foreground: #ffffff;
+  --primary-soft: #eef0ff;
+  --secondary: #f1eee8;
+  --secondary-foreground: #2a2824;
+  --muted: #f4f1eb;
+  --muted-foreground: #5f5b53;
+  --subtle-foreground: #79746a;
+  --accent: #edeae3;
+  --border: #e5e0d6;
+  --input: #ddd7cb;
+  --ring: #6366f1;
+  --destructive: #b42318;
+  --destructive-foreground: #ffffff;
+  --destructive-soft: #fee4e2;
+  --success: #166534;
+  --success-soft: #dcfce7;
+  --warning: #92400e;
+  --warning-soft: #fef3c7;
+  --selection: #dedbff;
+  --overlay: rgba(27, 26, 23, 0.4);
+  --shadow-xs: 0 1px 2px rgba(27, 26, 23, 0.06);
+  --shadow-sm: 0 1px 3px rgba(27, 26, 23, 0.08), 0 1px 2px rgba(27, 26, 23, 0.04);
+  --shadow-md: 0 4px 12px rgba(27, 26, 23, 0.08), 0 2px 4px rgba(27, 26, 23, 0.04);
+  --shadow-dialog: 0 16px 40px rgba(27, 26, 23, 0.16), 0 4px 12px rgba(27, 26, 23, 0.08);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-selection: var(--selection);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-dialog: var(--shadow-dialog);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--selection);
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  outline-color: var(--ring);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* TipTap editor surface */
+.tiptap {
+  min-height: 55vh;
+  outline: none;
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--foreground);
+}
+
+.tiptap > * + * {
+  margin-top: 0.75rem;
+}
+
+.tiptap h1,
+.tiptap h2,
+.tiptap h3 {
+  font-weight: 600;
+  letter-spacing: -0.011em;
+  line-height: 1.25;
+  margin-top: 1.5rem;
+}
+
+.tiptap h1 { font-size: 30px; }
+.tiptap h2 { font-size: 24px; }
+.tiptap h3 { font-size: 20px; }
+
+.tiptap p {
+  min-height: 1.75em;
+}
+
+.tiptap ul,
+.tiptap ol {
+  padding-left: 1.5rem;
+  margin: 0.75rem 0;
+}
+
+.tiptap ul { list-style: disc; }
+.tiptap ol { list-style: decimal; }
+.tiptap li { margin: 0.25rem 0; }
+.tiptap li > p { margin: 0; }
+
+.tiptap a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  color: var(--subtle-foreground);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.tiptap[contenteditable="false"] {
+  cursor: default;
+}
+
+@media (max-width: 640px) {
+  .tiptap { font-size: 16px; }
+  .tiptap h1 { font-size: 26px; }
+  .tiptap h2 { font-size: 22px; }
+  .tiptap h3 { font-size: 19px; }
+}
