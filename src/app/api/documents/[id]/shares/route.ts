@@ -11,7 +11,7 @@ export async function GET(_request: Request, { params }: RouteContext) {
     const { supabase, user } = await getApiUser();
     if (!user) return unauthorized();
     const id = parseUuid((await params).id);
-    return NextResponse.json({ collaborators: await listCollaborators(supabase, id) });
+    return NextResponse.json({ collaborators: await listCollaborators(supabase, id, user.id) });
   } catch (error) {
     return errorResponse(error);
   }
@@ -39,7 +39,7 @@ export async function POST(request: Request, { params }: RouteContext) {
       );
     }
 
-    const rows = await grantShare(supabase, id, body.email, body.permission);
+    const rows = await grantShare(supabase, id, user.id, body.email, body.permission);
     return NextResponse.json({ collaborator: rows[0] ?? null }, { status: 201 });
   } catch (error) {
     return errorResponse(error);

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export function SignOutButton() {
@@ -20,9 +21,11 @@ export function SignOutButton() {
       type="button"
       onClick={signOut}
       disabled={pending}
-      className="rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-60"
+      aria-label="Sign out"
+      title="Sign out"
+      className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-60"
     >
-      {pending ? "Signing out…" : "Sign out"}
+      <LogOut size={18} />
     </button>
   );
 }

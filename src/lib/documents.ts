@@ -161,54 +161,89 @@ export async function deleteDocument(supabase: Client, documentId: string, userI
   if (!data || data.length === 0) throw new ApiError(404, "NOT_FOUND", "Document not found.");
 }
 
-export async function listCollaborators(supabase: Client, documentId: string): Promise<Collaborator[]> {
-  const { data, error } = await supabase.rpc("list_document_collaborators", { p_document_id: documentId });
-  if (error) throw error;
-  return (data ?? []).map((row) => ({
-    userId: row.user_id,
-    email: row.email,
-    displayName: row.display_name ?? "",
-    permission: row.permission as Permission,
-    createdAt: row.created_at,
-  }));
+async function assertDocumentOwner(supabase: Client, documentId: string, callerId: string) {
+  const { data } = await supabase.from("documents").select("owner_id").eq("id", documentId).maybeSingle();
+  if (!data || data.owner_id !== callerId) throw new ApiError(403, "FORBIDDEN", "You do not have permission to do that.");
 }
 
-export async function grantShare(supabase: Client, documentId: string, emailInput: unknown, permissionInput: unknown) {
+export async function listCollaborators(supabase: Client, documentId: string, callerId: string): Promise<Collaborator[]> {
+  await assertDocumentOwner(supabase, documentId, callerId);
+
+  const { data: shares, error } = await supabase
+    .from("document_shares")
+    .select("user_id, permission, created_at")
+    .eq("document_id", documentId)
+    .order("created_at");
+  if (error) throw error;
+  if (!shares || shares.length === 0) return [];
+
+  const { data: profiles, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, email, display_name")
+    .in("id", shares.map((s) => s.user_id));
+  if (profileError) throw profileError;
+
+  const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
+  return shares.map((share) => {
+    const profile = profileMap.get(share.user_id);
+    return {
+      userId: share.user_id,
+      email: profile?.email ?? "",
+      displayName: profile?.display_name ?? "",
+      permission: share.permission as Permission,
+      createdAt: share.created_at,
+    };
+  });
+}
+
+export async function grantShare(supabase: Client, documentId: string, callerId: string, emailInput: unknown, permissionInput: unknown) {
   const email = parseEmail(emailInput);
   const permission = parsePermission(permissionInput);
-  const { data, error } = await supabase.rpc("grant_document_share", {
-    p_document_id: documentId,
-    p_email: email,
-    p_permission: permission,
-  });
+  await assertDocumentOwner(supabase, documentId, callerId);
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, email, display_name")
+    .eq("email", email.toLowerCase().trim())
+    .maybeSingle();
+  if (!profile) throw new ApiError(404, "USER_NOT_FOUND", "No account found with that email.");
+  if (profile.id === callerId) throw new ApiError(422, "SELF_SHARE", "You already own this document.");
+
+  const { error } = await supabase
+    .from("document_shares")
+    .insert({ document_id: documentId, user_id: profile.id, permission });
   if (error) throw error;
-  return data ?? [];
+
+  return [{ userId: profile.id, email: profile.email, displayName: profile.display_name ?? "", permission, createdAt: new Date().toISOString() }];
 }
 
 export async function updateShare(
   supabase: Client,
   documentId: string,
-  userId: string,
+  callerId: string,
+  collaboratorId: string,
   permissionInput: unknown,
 ) {
   const permission = parsePermission(permissionInput);
+  await assertDocumentOwner(supabase, documentId, callerId);
   const { data, error } = await supabase
     .from("document_shares")
     .update({ permission })
     .eq("document_id", documentId)
-    .eq("user_id", userId)
+    .eq("user_id", collaboratorId)
     .select("user_id")
     .maybeSingle();
   if (error) throw error;
   if (!data) throw new ApiError(404, "NOT_FOUND", "Collaborator not found.");
 }
 
-export async function removeShare(supabase: Client, documentId: string, userId: string) {
+export async function removeShare(supabase: Client, documentId: string, callerId: string, collaboratorId: string) {
+  await assertDocumentOwner(supabase, documentId, callerId);
   const { data, error } = await supabase
     .from("document_shares")
     .delete()
     .eq("document_id", documentId)
-    .eq("user_id", userId)
+    .eq("user_id", collaboratorId)
     .select("user_id");
   if (error) throw error;
   if (!data || data.length === 0) throw new ApiError(404, "NOT_FOUND", "Collaborator not found.");

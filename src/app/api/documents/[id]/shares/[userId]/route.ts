@@ -30,7 +30,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       );
     }
 
-    await updateShare(supabase, documentId, collaboratorId, body.permission);
+    await updateShare(supabase, documentId, user.id, collaboratorId, body.permission);
     return NextResponse.json({ ok: true });
   } catch (error) {
     return errorResponse(error);
@@ -44,7 +44,7 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
     const { id, userId } = await params;
     const documentId = parseUuid(id);
     const collaboratorId = parseUuid(userId);
-    await removeShare(supabase, documentId, collaboratorId);
+    await removeShare(supabase, documentId, user.id, collaboratorId);
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     return errorResponse(error);

@@ -9,6 +9,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import {
   ArrowLeft,
   Bold,
+  Download,
   Italic,
   Underline as UnderlineIcon,
   List,
@@ -25,6 +26,7 @@ import { ShareDialog } from "@/components/share-dialog";
 import { Button } from "@/components/modal";
 import { cn } from "@/lib/utils";
 import type { DocumentRecord } from "@/lib/utils";
+import { downloadMarkdown } from "@/lib/markdown-export";
 
 type SaveState = "idle" | "dirty" | "saving" | "saved" | "error" | "conflict";
 
@@ -271,6 +273,16 @@ export function DocumentEditor({ document: doc }: { document: DocumentRecord }) 
               )}
             </div>
           )}
+
+          <button
+            type="button"
+            aria-label="Export as Markdown"
+            title="Export as Markdown"
+            onClick={() => editor && downloadMarkdown(title, editor.getJSON())}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <Download size={16} />
+          </button>
 
           {isOwner && (
             <Button

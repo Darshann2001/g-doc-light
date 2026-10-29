@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FileText, Pencil, Plus, Search, Share2, Trash2, Upload } from "lucide-react";
+import { FileText, MoreVertical, Pencil, Plus, Search, Share2, Trash2, Upload } from "lucide-react";
 import { Button, Modal } from "@/components/modal";
 import { ImportDialog } from "@/components/import-dialog";
 import { ShareDialog } from "@/components/share-dialog";
@@ -25,8 +25,8 @@ function RoleBadge({ role }: { role: DocumentSummary["accessRole"] }) {
   return <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${styles[role]}`}>{labels[role]}</span>;
 }
 
-function DocumentRow({
-  document,
+function DocumentCard({
+  document: doc,
   onRename,
   onShare,
   onDelete,
@@ -36,60 +36,85 @@ function DocumentRow({
   onShare: (document: DocumentSummary) => void;
   onDelete: (document: DocumentSummary) => void;
 }) {
+  const isOwner = doc.accessRole === "owner";
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    }
+    window.addEventListener("mousedown", handleClick);
+    return () => window.removeEventListener("mousedown", handleClick);
+  }, [menuOpen]);
+
   return (
-    <article className="group flex items-center gap-3 px-3 py-3 transition-colors hover:bg-muted/60 sm:px-4">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
-        <FileText size={17} />
-      </span>
-      <div className="min-w-0 flex-1">
-        <Link
-          href={`/documents/${document.id}`}
-          className="block truncate text-sm font-medium text-foreground hover:text-primary"
-        >
-          {document.title}
-        </Link>
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <span>Updated {formatDate(document.updatedAt)}</span>
-          <RoleBadge role={document.accessRole} />
+    <div className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-xs transition-all hover:border-primary/40 hover:shadow-md">
+      {/* Thumbnail */}
+      <Link href={`/documents/${doc.id}`} className="block bg-white">
+        <div className="aspect-[3/4] overflow-hidden px-6 pt-6 pb-2">
+          <div className="h-2 w-1/2 rounded-sm bg-gray-300/70" />
+          <div className="mt-4 space-y-2">
+            {[1, 1, 0.75, 1, 1, 0.6, 1, 0.85, 1, 1, 0.7, 1].map((w, i) => (
+              <div key={i} className="h-1.5 rounded-sm bg-gray-200/80" style={{ width: `${w * 100}%` }} />
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="flex shrink-0 items-center gap-1">
-        {document.accessRole === "owner" ? (
-          <>
-            <button
-              type="button"
-              onClick={() => onShare(document)}
-              aria-label={`Share ${document.title}`}
-              className="rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-foreground"
-            >
-              <Share2 size={16} />
-            </button>
-            <button
-              type="button"
-              onClick={() => onRename(document)}
-              aria-label={`Rename ${document.title}`}
-              className="rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-foreground"
-            >
-              <Pencil size={16} />
-            </button>
-            <button
-              type="button"
-              onClick={() => onDelete(document)}
-              aria-label={`Delete ${document.title}`}
-              className="rounded-md p-2 text-muted-foreground hover:bg-destructive-soft hover:text-destructive"
-            >
-              <Trash2 size={16} />
-            </button>
-          </>
-        ) : null}
-        <Link
-          href={`/documents/${document.id}`}
-          className="ml-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-primary hover:bg-primary-soft"
-        >
-          Open
+      </Link>
+
+      {/* Footer */}
+      <div className="flex items-center gap-2 border-t border-border px-3 py-2.5">
+        <span className="shrink-0 text-primary">
+          <FileText size={16} />
+        </span>
+        <Link href={`/documents/${doc.id}`} className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium leading-tight">{doc.title}</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
+            {!isOwner && <RoleBadge role={doc.accessRole} />}
+            {isOwner && <>Opened {formatDate(doc.updatedAt)}</>}
+          </p>
         </Link>
+        {isOwner && (
+          <div ref={menuRef} className="relative shrink-0">
+            <button
+              type="button"
+              aria-label="More options"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen((v) => !v); }}
+              className="rounded-full p-1.5 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100"
+            >
+              <MoreVertical size={15} />
+            </button>
+            {menuOpen && (
+              <div className="absolute bottom-full right-0 z-50 mb-1 w-44 overflow-hidden rounded-lg border border-border bg-popover py-1 shadow-lg">
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onShare(doc); }}
+                  className="flex w-full items-center gap-2.5 px-3 py-1.5 text-sm hover:bg-accent"
+                >
+                  <Share2 size={14} /> Share
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onRename(doc); }}
+                  className="flex w-full items-center gap-2.5 px-3 py-1.5 text-sm hover:bg-accent"
+                >
+                  <Pencil size={14} /> Rename
+                </button>
+                <div className="my-1 border-t border-border" />
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onDelete(doc); }}
+                  className="flex w-full items-center gap-2.5 px-3 py-1.5 text-sm text-destructive hover:bg-destructive/10"
+                >
+                  <Trash2 size={14} /> Delete
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-    </article>
+    </div>
   );
 }
 
@@ -254,9 +279,9 @@ export function Dashboard({ initial }: { initial: DocumentList }) {
                 {query ? "No owned documents match your search." : "No owned documents yet."}
               </p>
             ) : (
-              <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card shadow-xs">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 {filteredOwned.map((document) => (
-                  <DocumentRow
+                  <DocumentCard
                     key={document.id}
                     document={document}
                     onRename={openRename}
@@ -281,9 +306,9 @@ export function Dashboard({ initial }: { initial: DocumentList }) {
                 {query ? "No shared documents match your search." : "Nothing has been shared with you yet."}
               </p>
             ) : (
-              <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card shadow-xs">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 {filteredShared.map((document) => (
-                  <DocumentRow
+                  <DocumentCard
                     key={document.id}
                     document={document}
                     onRename={openRename}
