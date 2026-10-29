@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 
 export async function requireUser() {
   const supabase = await createClient();
@@ -8,5 +8,5 @@ export async function requireUser() {
   } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
-  return { supabase, user };
+  return { supabase: createAdminClient(), user };
 }

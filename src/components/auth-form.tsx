@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export function AuthForm({ mode, next }: { mode: "login" | "signup"; next: string }) {
@@ -14,6 +15,7 @@ export function AuthForm({ mode, next }: { mode: "login" | "signup"; next: strin
   const [pending, setPending] = useState(false);
 
   const isLogin = mode === "login";
+  const [showPassword, setShowPassword] = useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -69,17 +71,27 @@ export function AuthForm({ mode, next }: { mode: "login" | "signup"; next: strin
           <label className="mb-1.5 block text-sm font-medium" htmlFor="password">
             Password
           </label>
-          <input
-            id="password"
-            type="password"
-            autoComplete={isLogin ? "current-password" : "new-password"}
-            required
-            minLength={6}
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="h-10 w-full rounded-lg border border-input bg-card px-3 text-sm placeholder:text-subtle-foreground"
-            placeholder="At least 6 characters"
-          />
+          <div className="relative">
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete={isLogin ? "current-password" : "new-password"}
+              required
+              minLength={6}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              className="h-10 w-full rounded-lg border border-input bg-card px-3 pr-10 text-sm placeholder:text-subtle-foreground"
+              placeholder="At least 6 characters"
+            />
+            <button
+              type="button"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
         </div>
 
         {error ? (

@@ -294,27 +294,10 @@ export function DocumentEditor({ document: doc }: { document: DocumentRecord }) 
       {/* Toolbar */}
       {canEdit && editor && (
         <div className="sticky top-14 z-10 border-b border-border bg-background/95 backdrop-blur">
-          <div className="mx-auto flex h-11 max-w-6xl items-center gap-0.5 overflow-x-auto px-4 sm:px-6 lg:px-8">
-            <div role="group" aria-label="History" className="flex items-center">
-              <ToolbarButton
-                label="Undo"
-                disabled={!editor.can().undo()}
-                onClick={() => editor.chain().focus().undo().run()}
-              >
-                <Undo2 size={15} />
-              </ToolbarButton>
-              <ToolbarButton
-                label="Redo"
-                disabled={!editor.can().redo()}
-                onClick={() => editor.chain().focus().redo().run()}
-              >
-                <Redo2 size={15} />
-              </ToolbarButton>
-            </div>
+          <div className="mx-auto flex h-11 max-w-6xl items-center px-4 sm:px-6 lg:px-8">
 
-            <div className="mx-1.5 h-5 w-px bg-border" aria-hidden />
-
-            <div className="relative" data-block-menu>
+            {/* Block dropdown — outside overflow container so it isn't clipped */}
+            <div className="relative shrink-0" data-block-menu>
               <button
                 type="button"
                 aria-label="Block type"
@@ -331,7 +314,7 @@ export function DocumentEditor({ document: doc }: { document: DocumentRecord }) 
               {blockOpen && (
                 <div
                   data-block-menu
-                  className="absolute left-0 top-full mt-1 min-w-[140px] rounded-xl border border-border bg-card p-1 shadow-md"
+                  className="absolute left-0 top-full z-50 mt-1 min-w-[140px] rounded-xl border border-border bg-card p-1 shadow-md"
                 >
                   {(["p", "h1", "h2", "h3"] as const).map((type) => (
                     <button
@@ -353,49 +336,71 @@ export function DocumentEditor({ document: doc }: { document: DocumentRecord }) 
               )}
             </div>
 
-            <div className="mx-1.5 h-5 w-px bg-border" aria-hidden />
+            <div className="mx-1.5 h-5 w-px shrink-0 bg-border" aria-hidden />
 
-            <div role="group" aria-label="Text formatting" className="flex items-center">
-              <ToolbarButton
-                label="Bold"
-                active={editor.isActive("bold")}
-                onClick={() => editor.chain().focus().toggleBold().run()}
-              >
-                <Bold size={15} />
-              </ToolbarButton>
-              <ToolbarButton
-                label="Italic"
-                active={editor.isActive("italic")}
-                onClick={() => editor.chain().focus().toggleItalic().run()}
-              >
-                <Italic size={15} />
-              </ToolbarButton>
-              <ToolbarButton
-                label="Underline"
-                active={editor.isActive("underline")}
-                onClick={() => editor.chain().focus().toggleUnderline().run()}
-              >
-                <UnderlineIcon size={15} />
-              </ToolbarButton>
-            </div>
+            {/* Remaining buttons — scrollable on narrow screens */}
+            <div className="flex items-center gap-0.5 overflow-x-auto">
+              <div role="group" aria-label="History" className="flex shrink-0 items-center">
+                <ToolbarButton
+                  label="Undo"
+                  disabled={!editor.can().undo()}
+                  onClick={() => editor.chain().focus().undo().run()}
+                >
+                  <Undo2 size={15} />
+                </ToolbarButton>
+                <ToolbarButton
+                  label="Redo"
+                  disabled={!editor.can().redo()}
+                  onClick={() => editor.chain().focus().redo().run()}
+                >
+                  <Redo2 size={15} />
+                </ToolbarButton>
+              </div>
 
-            <div className="mx-1.5 h-5 w-px bg-border" aria-hidden />
+              <div className="mx-1.5 h-5 w-px shrink-0 bg-border" aria-hidden />
 
-            <div role="group" aria-label="Lists" className="flex items-center">
-              <ToolbarButton
-                label="Bullet list"
-                active={editor.isActive("bulletList")}
-                onClick={() => editor.chain().focus().toggleBulletList().run()}
-              >
-                <List size={15} />
-              </ToolbarButton>
-              <ToolbarButton
-                label="Numbered list"
-                active={editor.isActive("orderedList")}
-                onClick={() => editor.chain().focus().toggleOrderedList().run()}
-              >
-                <ListOrdered size={15} />
-              </ToolbarButton>
+              <div role="group" aria-label="Text formatting" className="flex shrink-0 items-center">
+                <ToolbarButton
+                  label="Bold"
+                  active={editor.isActive("bold")}
+                  onClick={() => editor.chain().focus().toggleBold().run()}
+                >
+                  <Bold size={15} />
+                </ToolbarButton>
+                <ToolbarButton
+                  label="Italic"
+                  active={editor.isActive("italic")}
+                  onClick={() => editor.chain().focus().toggleItalic().run()}
+                >
+                  <Italic size={15} />
+                </ToolbarButton>
+                <ToolbarButton
+                  label="Underline"
+                  active={editor.isActive("underline")}
+                  onClick={() => editor.chain().focus().toggleUnderline().run()}
+                >
+                  <UnderlineIcon size={15} />
+                </ToolbarButton>
+              </div>
+
+              <div className="mx-1.5 h-5 w-px shrink-0 bg-border" aria-hidden />
+
+              <div role="group" aria-label="Lists" className="flex shrink-0 items-center">
+                <ToolbarButton
+                  label="Bullet list"
+                  active={editor.isActive("bulletList")}
+                  onClick={() => editor.chain().focus().toggleBulletList().run()}
+                >
+                  <List size={15} />
+                </ToolbarButton>
+                <ToolbarButton
+                  label="Numbered list"
+                  active={editor.isActive("orderedList")}
+                  onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                >
+                  <ListOrdered size={15} />
+                </ToolbarButton>
+              </div>
             </div>
           </div>
         </div>
